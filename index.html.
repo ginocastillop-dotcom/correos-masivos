@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Correos Masivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF5F4;
+    --surface:#FFFFFF;
+    --ink:#12312B;
+    --muted:#5E7D78;
+    --primary:#0E5E59;
+    --primary-dark:#0A423F;
+    --accent:#F2703C;
+    --accent-soft:#FDE3D3;
+    --border:#DCE7E5;
+    --amber:#C98A2E; --amber-soft:#FBF0DD;
+    --red:#B5473C; --red-soft:#FBE4E0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:15px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+  button{font-family:inherit;}
+  input,select,textarea{font-family:inherit;font-size:15px;}
+
+  header.app-header{background:var(--primary);color:#fff;padding:18px 18px 22px;position:sticky;top:0;z-index:20;}
+  header.app-header .row{display:flex;align-items:center;justify-content:space-between;}
+  header.app-header h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.2px;}
+  header.app-header .sub{margin:2px 0 0;font-size:12.5px;opacity:.8;}
+  .wave{display:block;width:100%;height:14px;margin-top:14px;opacity:.55;}
+
+  main{padding:16px 14px 90px;max-width:640px;margin:0 auto;}
+  .screen{display:none;}
+  .screen.activa{display:block;animation:fadein .18s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+  .card h3{margin:0 0 2px;font-size:16px;font-weight:600;}
+  .card .meta{color:var(--muted);font-size:13px;line-height:1.5;}
+  .card .meta b{color:var(--ink);}
+
+  .searchbar{display:flex;gap:8px;margin-bottom:12px;}
+  .searchbar input{flex:1;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:11px;padding:11px 16px;font-weight:600;font-size:14px;cursor:pointer;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-ghost{background:var(--surface);color:var(--primary);border:1px solid var(--border);}
+  .btn-block{width:100%;}
+  .btn-sm{padding:7px 12px;font-size:13px;border-radius:9px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .fab{position:fixed;right:18px;bottom:86px;width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;font-size:26px;border:none;box-shadow:0 6px 18px rgba(242,112,60,.4);z-index:25;}
+
+  nav.bottom{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:30;padding:6px 4px calc(6px + env(safe-area-inset-bottom));}
+  nav.bottom button{flex:1;background:none;border:none;padding:8px 2px;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  nav.bottom button svg{width:21px;height:21px;}
+  nav.bottom button.activo{color:var(--primary);font-weight:600;}
+
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;}
+  .badge-pend{background:var(--amber-soft);color:var(--amber);}
+  .badge-enviado{background:var(--primary);color:#fff;}
+  .badge-cancel{background:var(--red-soft);color:var(--red);}
+  .badge-manual{background:var(--accent-soft);color:var(--accent);}
+
+  .empty{text-align:center;color:var(--muted);padding:50px 20px;}
+  .empty .display{font-size:19px;color:var(--ink);margin-bottom:6px;}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(18,49,43,.45);display:none;align-items:flex-end;z-index:50;}
+  .modal-bg.activo{display:flex;}
+  .modal{background:var(--surface);width:100%;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px 18px 26px;}
+  .modal h2{margin:0 0 14px;font-size:19px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+  .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fbfdfc;}
+  .field textarea{min-height:90px;resize:vertical;}
+  .row2{display:flex;gap:10px;}
+  .row2>.field{flex:1;}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .modal-close{position:sticky;top:0;text-align:right;margin-bottom:-6px;}
+  .modal-close button{background:none;border:none;font-size:22px;color:var(--muted);}
+
+  .chip-list{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0;}
+  .chip{border:1px solid var(--border);background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+  .contact-pick{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border);}
+  .contact-pick label{display:flex;align-items:center;gap:10px;font-size:14px;}
+  .contact-pick .meta{font-size:12px;color:var(--muted);}
+
+  .steps{display:flex;gap:6px;margin-bottom:14px;}
+  .steps span{flex:1;height:4px;border-radius:3px;background:var(--border);}
+  .steps span.on{background:var(--accent);}
+
+  .link-chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);padding:5px 10px;border-radius:9px;font-size:12.5px;margin:4px 6px 0 0;}
+
+  .timeline-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .timeline-item .dot{width:9px;height:9px;border-radius:50%;background:var(--primary);margin-top:5px;flex-shrink:0;}
+  .timeline-item.manual .dot{background:var(--accent);}
+  .timeline-item .txt small{color:var(--muted);}
+
+  .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:13.5px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.on{opacity:1;}
+
+  .badge-contactado{background:var(--primary);color:#fff;}
+  .badge-respuesta{background:#DCEEDC;color:#2F7A3C;}
+  .badge-cerrado{background:#E7E7E7;color:#5E6266;}
+  .badge-whatsapp{background:#DCF3E4;color:#1F9950;}
+  .queue-box{background:#fbfdfc;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13.5px;white-space:pre-wrap;margin:8px 0;}
+  .city-row{display:flex;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--border);}
+  .city-row input{flex:1;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#fbfdfc;}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="row">
+    <div>
+      <h1>Correos Masivos</h1>
+      <p class="sub" id="subEmpresa">Villalba by Kingspan</p>
+    </div>
+  </div>
+  <svg class="wave" viewBox="0 0 300 14" preserveAspectRatio="none"><path d="M0 7 Q 15 0 30 7 T 60 7 T 90 7 T 120 7 T 150 7 T 180 7 T 210 7 T 240 7 T 270 7 T 300 7" stroke="#ffffff" stroke-width="2" fill="none"/></svg>
+</header>
+
+<div id="cargando" style="padding:50px 20px;text-align:center;color:var(--muted);">Cargando datos…</div>
+<div id="errorCarga" style="display:none;margin:14px;padding:14px 16px;background:var(--red-soft);color:var(--red);border-radius:12px;font-size:13.5px;line-height:1.5;"></div>
+
+<main>
+
+  <!-- DIRECTORIO -->
+  <section class="screen activa" id="screen-directorio">
+    <div class="searchbar">
+      <input type="text" id="buscarContacto" placeholder="Buscar por nombre, empresa o planta...">
+      <button class="btn btn-ghost btn-sm" onclick="importarVariosDesdeTelefono()" title="Importar varios contactos del teléfono">📇+</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('archivoCSV').click()" title="Importar contactos desde archivo CSV">📄+</button>
+      <input type="file" id="archivoCSV" accept=".csv" style="display:none">
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalEmpresas()" title="Ver y editar ciudad por empresa">🏙️</button>
+    </div>
+    <div class="chip-list" id="filtroNichosDir"></div>
+    <div class="chip-list" id="filtroEmpresasDir"></div>
+    <div class="chip-list" id="filtroCiudadesDir"></div>
+    <div id="listaContactos"></div>
+  </section>
+
+  <!-- COMPOSITOR -->
+  <section class="screen" id="screen-compositor">
+    <h2 class="display" style="font-size:19px;margin:2px 0 14px;">Nuevo envío</h2>
+    <div class="steps"><span id="st1" class="on"></span><span id="st2"></span><span id="st3"></span></div>
+
+    <div id="pasoDestinatarios">
+      <div class="card">
+        <b>1. Destinatarios</b>
+        <p class="meta" style="margin:6px 0 2px;">Filtrar por rubro</p>
+        <div class="chip-list" id="filtroNichosComp"></div>
+        <p class="meta" style="margin:6px 0 2px;">Filtrar por empresa</p>
+        <div class="chip-list" id="filtroEmpresasComp"></div>
+        <p class="meta" style="margin:6px 0 2px;">Filtrar por ciudad</p>
+        <div class="chip-list" id="filtroCiudadesComp"></div>
+        <div id="listaDestinatarios" style="max-height:260px;overflow-y:auto;margin-top:6px;"></div>
+        <p class="meta" id="contadorSeleccion">0 seleccionados</p>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="irPaso(2)">Siguiente</button>
+    </div>
+
+    <div id="pasoMensaje" style="display:none;">
+      <div class="card">
+        <b>2. Mensaje</b>
+        <p class="meta" style="margin:6px 0 2px;">Canal</p>
+        <div class="chip-list">
+          <div class="chip on" id="chipCanalCorreo" onclick="seleccionarCanal('correo')">Correo</div>
+          <div class="chip" id="chipCanalWA" onclick="seleccionarCanal('whatsapp')">WhatsApp</div>
+        </div>
+        <div class="field">
+          <label>Plantilla (opcional)</label>
+          <select id="selectPlantilla" onchange="cargarPlantilla()">
+            <option value="">Escribir desde cero</option>
+          </select>
+        </div>
+        <div class="field" id="campoAsunto">
+          <label>Asunto</label>
+          <input type="text" id="asuntoMsg" placeholder="Ej: Soluciones en paneles aislados para su planta">
+        </div>
+        <div class="field">
+          <label id="labelCuerpo">Cuerpo — variables: {{nombre}} {{cargo}} {{empresa}} {{planta}}</label>
+          <textarea id="cuerpoMsg" placeholder="Estimado/a {{nombre}}..."></textarea>
+        </div>
+        <div class="field">
+          <label>Nombre de la campaña (opcional — solo si es a varios, para agruparla en el Historial)</label>
+          <input type="text" id="nombreCampana" placeholder="Ej: Promo agosto salmoneras">
+        </div>
+        <div class="field">
+          <label>Adjuntar archivo (se sube a Drive y se agrega como link)</label>
+          <input type="file" id="archivoAdjunto">
+          <div id="adjuntoPreview"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="irPaso(1)">Atrás</button>
+        <button class="btn btn-primary" style="flex:2" onclick="irPaso(3)">Siguiente</button>
+      </div>
+    </div>
+
+    <div id="pasoEnvio" style="display:none;">
+      <div class="card">
+        <b>3. Cuándo enviar</b>
+        <div class="chip-list">
+          <div class="chip on" id="chipAhora" onclick="elegirModoEnvio('ahora')">Enviar ahora</div>
+          <div class="chip" id="chipProgramado" onclick="elegirModoEnvio('programado')">Programar</div>
+        </div>
+        <div id="camposProgramado" style="display:none;">
+          <div class="row2">
+            <div class="field"><label>Fecha</label><input type="date" id="fechaProg"></div>
+            <div class="field"><label>Hora</label><input type="time" id="horaProg"></div>
+          </div>
+        </div>
+        <p class="meta" id="notaCanalWA" style="display:none;">WhatsApp se envía uno por uno, confirmando cada contacto — por ahora no se puede programar.</p>
+        <p class="meta" id="resumenEnvio"></p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="irPaso(2)">Atrás</button>
+        <button class="btn btn-accent" style="flex:2" onclick="confirmarEnvioSegunCanal()">Confirmar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section class="screen" id="screen-historial">
+    <div class="chip-list">
+      <div class="chip on" id="chipHistIndividual" onclick="cambiarVistaHistorial('individual')">Individual</div>
+      <div class="chip" id="chipHistCampana" onclick="cambiarVistaHistorial('campana')">Por campaña</div>
+    </div>
+    <div class="searchbar">
+      <input type="text" id="buscarHistorial" placeholder="Buscar contacto o empresa...">
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalNota()">+ Nota</button>
+    </div>
+    <div id="listaHistorial"></div>
+  </section>
+
+  <!-- COLA -->
+  <section class="screen" id="screen-cola">
+    <div class="chip-list">
+      <div class="chip on" data-estado="Pendiente" onclick="filtrarCola('Pendiente',this)">Pendientes</div>
+      <div class="chip" data-estado="Enviado" onclick="filtrarCola('Enviado',this)">Enviados</div>
+      <div class="chip" data-estado="Cancelado" onclick="filtrarCola('Cancelado',this)">Cancelados</div>
+    </div>
+    <div id="listaCola"></div>
+  </section>
+
+</main>
+
+<button class="fab" id="fabContacto" onclick="abrirModalContacto()">+</button>
+
+<nav class="bottom">
+  <button class="activo" data-screen="directorio" onclick="irScreen('directorio')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+    Directorio
+  </button>
+  <button data-screen="compositor" onclick="irScreen('compositor')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+    Nuevo envío
+  </button>
+  <button data-screen="historial" onclick="irScreen('historial')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    Historial
+  </button>
+  <button data-screen="cola" onclick="irScreen('cola')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+    Cola
+  </button>
+</nav>
+
+<!-- MODAL CONTACTO -->
+<div class="modal-bg" id="modalContacto">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarModal('modalContacto')">✕</button></div>
+    <h2>Nuevo contacto</h2>
+    <button class="btn btn-ghost btn-block" onclick="importarDesdeTelefono()">📇 Importar desde contactos del teléfono</button>
+    <div style="height:12px;"></div>
+    <div class="field"><label>Nombre</label><input id="fNombre"></div>
+    <div class="row2">
+      <div class="field"><label>Cargo</label><input id="fCargo" placeholder="Ej: Jefe de Compras"></div>
+      <div class="field"><label>Teléfono</label><input id="fTelefono"></div>
+    </div>
+    <div class="field"><label>Correo</label><input id="fCorreo" type="email"></div>
+    <div class="field">
+      <label>Empresa</label>
+      <select id="fEmpresa" onchange="actualizarPlantasForm()"><option value="">— Seleccionar —</option></select>
+    </div>
+    <div class="field"><label>+ Nueva empresa (si no está en la lista)</label>
+      <div class="row2">
+        <input id="fNuevaEmpresa" placeholder="Razón social">
+        <select id="fNuevoNicho">
+          <option value="Salmón">Salmón</option>
+          <option value="Mariscos">Mariscos</option>
+          <option value="Papas">Papas</option>
+          <option value="Fruta">Fruta</option>
+          <option value="Constructora">Constructora</option>
+          <option value="Distribuidor">Distribuidor</option>
+          <option value="Arquitecto">Arquitecto</option>
+          <option value="Ferretería">Ferretería</option>
+          <option value="Instalador/Contratista">Instalador/Contratista</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <input id="fNuevaCiudad" placeholder="Ciudad (opcional)" style="margin-top:8px;">
+    </div>
+    <div class="field">
+      <label>Sede / Planta / Obra (si aplica)</label>
+      <select id="fPlanta"><option value="">— Sin sede específica —</option></select>
+    </div>
+    <div class="field"><label>+ Nueva sede (planta, obra, sucursal...)</label>
+      <div class="row2">
+        <input id="fNuevaPlanta" placeholder="Nombre de sede/planta/obra">
+        <input id="fRegionPlanta" placeholder="Región / ubicación">
+      </div>
+    </div>
+    <div class="field"><label>Notas</label><textarea id="fNotas"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary btn-block" onclick="guardarContacto()">Guardar contacto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE CONTACTO -->
+<div class="modal-bg" id="modalDetalle">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarModal('modalDetalle')">✕</button></div>
+    <h2 id="detNombre"></h2>
+    <p class="meta" id="detMeta"></p>
+    <div id="detEstadoBadge" style="margin:6px 0;"></div>
+    <p class="meta" style="margin:10px 0 2px;">Estado</p>
+    <div class="chip-list" id="detEstadoChips"></div>
+    <div style="display:flex;gap:8px;margin:10px 0 16px;flex-wrap:wrap;">
+      <button class="btn btn-accent btn-sm" onclick="irACompositorConContacto()">Redactar correo</button>
+      <button class="btn btn-primary btn-sm" id="detBtnWA" style="display:none;" onclick="irACompositorConContactoWA()">WhatsApp</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalNota(idContactoActivo)">+ Nota</button>
+    </div>
+    <b style="font-size:13px;color:var(--muted);">HISTORIAL</b>
+    <div id="detHistorial"></div>
+  </div>
+</div>
+
+<!-- MODAL NOTA MANUAL -->
+<div class="modal-bg" id="modalNota">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarModal('modalNota')">✕</button></div>
+    <h2>Registrar comunicación externa</h2>
+    <div class="field">
+      <label>Contacto</label>
+      <select id="notaContacto"><option value="">— Seleccionar —</option></select>
+    </div>
+    <div class="field">
+      <label>Tipo</label>
+      <select id="notaTipo">
+        <option>Correo recibido</option>
+        <option>Correo enviado (manual)</option>
+        <option>Llamada</option>
+        <option>Visita</option>
+        <option>Nota</option>
+      </select>
+    </div>
+    <div class="field"><label>Asunto / resumen</label><input id="notaAsunto"></div>
+    <div class="field"><label>Detalle</label><textarea id="notaDetalle"></textarea></div>
+    <button class="btn btn-primary btn-block" onclick="guardarNota()">Guardar en historial</button>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAR VARIOS -->
+<div class="modal-bg" id="modalImportarVarios">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarModal('modalImportarVarios')">✕</button></div>
+    <h2>Importar contactos del teléfono</h2>
+    <p class="meta" id="resumenImportados"></p>
+    <div class="field">
+      <label>Asignar a empresa (opcional, aplica a todos los importados)</label>
+      <select id="impEmpresa"><option value="">— Sin asignar —</option></select>
+    </div>
+    <div class="field">
+      <label>Asignar a sede/planta (opcional)</label>
+      <select id="impPlanta"><option value="">— Sin sede —</option></select>
+    </div>
+    <div id="listaImportados" style="max-height:240px;overflow-y:auto;margin:10px 0;"></div>
+    <button class="btn btn-primary btn-block" onclick="confirmarImportarVarios()">Guardar contactos</button>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAR CSV -->
+<div class="modal-bg" id="modalImportarCSV">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarModal('modalImportarCSV')">✕</button></div>
+    <h2>Importar contactos desde CSV</h2>
+    <p class="meta" id="resumenImportadosCSV"></p>
+    <p class="meta" id="progresoImportCSV" style="display:none;"></p>
+    <button class="btn btn-primary btn-block" id="btnConfirmarImportCSV" onclick="confirmarImportarCSV()">Importar contactos</button>
+  </div>
+</div>
+
+<!-- MODAL EMPRESAS Y CIUDADES -->
+<div class="modal-bg" id="modalEmpresas">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarModal('modalEmpresas')">✕</button></div>
+    <h2>Empresas y ciudades</h2>
+    <p class="meta">La ciudad se guarda solo en este teléfono/navegador (no viaja todavía al Google Sheet) — sirve para filtrar destinatarios por ciudad en Nuevo envío.</p>
+    <div id="listaEmpresasCiudad" style="margin:12px 0;"></div>
+    <button class="btn btn-ghost btn-block" onclick="importarTeleventas()">📥 Importar los 22 contactos de Televentas/Redes Sociales</button>
+  </div>
+</div>
+
+<!-- MODAL COLA DE ENVIO WHATSAPP -->
+<div class="modal-bg" id="modalColaWA">
+  <div class="modal">
+    <div class="modal-close"><button onclick="cerrarColaWA()">✕</button></div>
+    <h2>Enviando por WhatsApp</h2>
+    <p class="meta" id="colaWAProgreso"></p>
+    <p class="meta" style="margin:10px 0 2px;">Destinatario</p>
+    <div id="colaWANombre" style="font-weight:600;font-size:15px;"></div>
+    <div class="meta" id="colaWATelefono"></div>
+    <p class="meta" style="margin:10px 0 2px;">Mensaje</p>
+    <div class="queue-box" id="colaWAPreview"></div>
+    <div class="modal-actions" id="colaWAAcciones">
+      <button class="btn btn-primary" style="flex:1" onclick="enviarColaWAActual()">Enviar a este contacto</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="saltarColaWAActual()">Saltar</button>
+    </div>
+    <div id="colaWADone" style="display:none;">
+      <p class="meta" id="colaWAResumen"></p>
+      <button class="btn btn-primary btn-block" onclick="cerrarColaWA()">Listo</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ⚠️ Pega aquí la URL de implementación de tu Apps Script (Implementar → Gestionar
+// implementaciones → icono de copiar junto a la URL). Debe terminar en /exec.
+const API_URL = 'https://script.google.com/macros/s/AKfycbyI4SAYglQMoSEIhz9W0Ad8Sc6lfR11FI9UtzwZTVFXS9PStPidJqAcOml6vu1KF7Pk/exec';
+
+let DB = { empresas:[], plantas:[], contactos:[], plantillas:[], cola:[], historial:[], correoUsuario:'' };
+let seleccionCompositor = new Set();
+let modoEnvio = 'ahora';
+let idContactoActivo = null;
+let filtroEmpresaComp = null;
+let filtroNichoComp = null;
+let filtroCiudadComp = null;
+let filtroNichoDir = null;
+let filtroEmpresaDir = null;
+let filtroCiudadDir = null;
+let adjuntoLink = '';
+let filtroColaActual = 'Pendiente';
+let canalCompositor = 'correo';
+let vistaHistorial = 'individual';
+let ciudadesLocal = {};
+let colaWA = [];
+let colaWAIndex = 0;
+let colaWALoteId = '';
+let colaWANombreCampana = '';
+let colaWAEnviados = 0;
+let colaWASaltados = 0;
+const CIUDADES_KEY = 'correos_masivos_ciudades_local_v1';
+
+async function llamar(fn, ...args){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    // text/plain evita que el navegador mande un preflight OPTIONS, que Apps Script no responde
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ accion: fn, args })
+  });
+  const datos = await res.json();
+  if(!datos.ok) throw new Error(datos.error || 'Error desconocido en el servidor');
+  return datos.resultado;
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'), 2200);
+}
+function fmtFecha(v){
+  if(!v) return '';
+  const d = new Date(v);
+  if(isNaN(d)) return String(v);
+  return d.toLocaleDateString('es-CL',{day:'2-digit',month:'short'}) + ' · ' + d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ---------- ARRANQUE ----------
+window.onerror = function(msg, url, line){
+  const banner = document.getElementById('errorCarga');
+  const cargando = document.getElementById('cargando');
+  if(cargando) cargando.style.display = 'none';
+  if(banner){
+    banner.style.display = 'block';
+    banner.innerHTML = '<b>Error en la app</b><br>' + msg + ' (línea ' + line + ')<br>'
+      + '<span style="font-size:11.5px;">Manda una captura de pantalla de esto.</span>';
+  }
+};
+window.onload = () => {
+  cargarCiudadesLocal();
+  cargarDatosIniciales();
+};
+function cargarDatosIniciales(){
+  document.getElementById('cargando').style.display = 'block';
+  document.getElementById('errorCarga').style.display = 'none';
+  llamar('obtenerDatosIniciales').then(datos=>{
+    DB = datos;
+    document.getElementById('cargando').style.display = 'none';
+    renderDirectorio(); renderFiltroEmpresasComp(); renderSelectsFormulario();
+    renderPlantillasSelect(); renderHistorial(); renderCola();
+  }).catch(e=>{
+    document.getElementById('cargando').style.display = 'none';
+    const banner = document.getElementById('errorCarga');
+    banner.style.display = 'block';
+    banner.innerHTML = '<b>No se pudieron cargar los contactos.</b><br>' + (e.message||e)
+      + '<br><button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="cargarDatosIniciales()">Reintentar</button>';
+  });
+}
+
+// ---------- NAVEGACIÓN ----------
+function irScreen(nombre){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('activa'));
+  document.getElementById('screen-'+nombre).classList.add('activa');
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('activo', b.dataset.screen===nombre));
+  document.getElementById('fabContacto').style.display = (nombre==='directorio') ? 'flex' : 'none';
+}
+function cerrarModal(id){ document.getElementById(id).classList.remove('activo'); }
+
+// ---------- DIRECTORIO ----------
+function nombreEmpresa(id){ const e=DB.empresas.find(x=>x.ID===id); return e? e['Razon Social']:''; }
+function nombrePlanta(id){ const p=DB.plantas.find(x=>x.ID===id); return p? p['Nombre Planta']:''; }
+
+// ---------- CIUDAD (local, por empresa) ----------
+function cargarCiudadesLocal(){
+  try{ ciudadesLocal = JSON.parse(localStorage.getItem(CIUDADES_KEY) || '{}'); }
+  catch(e){ ciudadesLocal = {}; }
+}
+function guardarCiudadLocal(idEmpresa, ciudad){
+  if(!idEmpresa) return;
+  ciudad = (ciudad||'').trim();
+  if(ciudad) ciudadesLocal[idEmpresa] = ciudad; else delete ciudadesLocal[idEmpresa];
+  localStorage.setItem(CIUDADES_KEY, JSON.stringify(ciudadesLocal));
+}
+function ciudadEmpresa(idEmpresa){ return ciudadesLocal[idEmpresa] || ''; }
+
+// ---------- ESTADO DEL CONTACTO (derivado del historial) ----------
+function estadoContacto(idContacto){
+  const hist = DB.historial.filter(h=>h['ID Contacto']===idContacto)
+    .slice().sort((a,b)=> new Date(b.Fecha) - new Date(a.Fecha));
+  const cambio = hist.find(h=> (h.Tipo||'').indexOf('Estado:') === 0);
+  if(cambio) return cambio.Tipo.replace('Estado:','').trim();
+  return hist.length ? 'Contactado' : 'Pendiente';
+}
+function claseBadgeEstado(estado){
+  if(estado==='Contactado') return 'badge-contactado';
+  if(estado==='Con respuesta') return 'badge-respuesta';
+  if(estado==='Cerrado') return 'badge-cerrado';
+  return 'badge-pend';
+}
+async function cambiarEstado(nuevo){
+  const id = idContactoActivo;
+  if(!id) return;
+  await llamar('crearNotaManual', {idContacto:id, tipo:'Estado: '+nuevo, asunto:'', detalle:''});
+  DB.historial.unshift({'ID Contacto':id, Fecha:new Date(), Canal:'Manual', Tipo:'Estado: '+nuevo, 'Asunto/Resumen':''});
+  verDetalleContacto(id); renderDirectorio();
+  toast('Estado actualizado a "'+nuevo+'"');
+}
+
+// ---------- ETIQUETA DE CAMPAÑA/LOTE (embebida en Asunto, invisible para el destinatario) ----------
+function generarLoteId(){ return Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36); }
+function etiquetarLote(texto, loteId, nombre){
+  return '\u00a7L:'+loteId+'|'+(nombre||'Campana')+'\u00a7 ' + (texto||'');
+}
+function quitarEtiquetaLote(texto){
+  return (texto||'').replace(/^\u00a7L:[^|]*\|[^\u00a7]*\u00a7 ?/, '');
+}
+function leerEtiquetaLote(texto){
+  const m = /^\u00a7L:([^|]*)\|([^\u00a7]*)\u00a7/.exec(texto||'');
+  return m ? {id:m[1], nombre:m[2]} : null;
+}
+
+function renderDirectorio(){
+  const filtro = (document.getElementById('buscarContacto').value||'').toLowerCase();
+  const cont = document.getElementById('listaContactos');
+  const lista = DB.contactos.filter(c=>{
+    const txt = (c.Nombre+' '+nombreEmpresa(c['ID Empresa'])+' '+nombrePlanta(c['ID Planta'])).toLowerCase();
+    return txt.includes(filtro) &&
+      (!filtroNichoDir || nichoEmpresa(c['ID Empresa'])===filtroNichoDir) &&
+      (!filtroEmpresaDir || c['ID Empresa']===filtroEmpresaDir) &&
+      (!filtroCiudadDir || ciudadEmpresa(c['ID Empresa'])===filtroCiudadDir);
+  });
+  if(lista.length===0){
+    const hayFiltro = filtro || filtroNichoDir || filtroEmpresaDir || filtroCiudadDir;
+    cont.innerHTML = hayFiltro
+      ? `<div class="empty"><div class="display">Nada con ese filtro</div>Prueba quitando alguno de los filtros de arriba.</div>`
+      : `<div class="empty"><div class="display">Aún no hay contactos</div>Usa el botón + para agregar el primero, o impórtalo desde tu teléfono.</div>`;
+    return;
+  }
+  cont.innerHTML = lista.map(c=>{
+    const ciudad = ciudadEmpresa(c['ID Empresa']);
+    const estado = estadoContacto(c.ID);
+    return `
+    <div class="card" onclick="verDetalleContacto('${c.ID}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <h3 style="margin:0;">${c.Nombre}</h3>
+        <span class="badge ${claseBadgeEstado(estado)}">${estado}</span>
+      </div>
+      <div class="meta">${c.Cargo? c.Cargo+' · ':''}<b>${nombreEmpresa(c['ID Empresa'])}</b>${nichoEmpresa(c['ID Empresa'])? ' <span class="badge badge-manual">'+nichoEmpresa(c['ID Empresa'])+'</span>':''}${ciudad? ' · '+ciudad:''}${nombrePlanta(c['ID Planta'])? ' · '+nombrePlanta(c['ID Planta']):''}<br>${c.Correo}</div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('buscarContacto').addEventListener('input', renderDirectorio);
+
+function verDetalleContacto(id){
+  idContactoActivo = id;
+  const c = DB.contactos.find(x=>x.ID===id);
+  document.getElementById('detNombre').textContent = c.Nombre;
+  const ciudad = ciudadEmpresa(c['ID Empresa']);
+  document.getElementById('detMeta').textContent = `${c.Cargo||''} · ${nombreEmpresa(c['ID Empresa'])}${ciudad?' ('+ciudad+')':''} · ${nombrePlanta(c['ID Planta'])} · ${c.Correo}`;
+  const estado = estadoContacto(id);
+  document.getElementById('detEstadoBadge').innerHTML = `<span class="badge ${claseBadgeEstado(estado)}">${estado}</span>`;
+  const chipsEstado = ['Pendiente','Contactado','Con respuesta','Cerrado'];
+  document.getElementById('detEstadoChips').innerHTML = chipsEstado.map(e=>
+    `<div class="chip${e===estado?' on':''}" onclick="cambiarEstado('${e}')">${e}</div>`).join('');
+  document.getElementById('detBtnWA').style.display = c.Telefono ? 'inline-flex' : 'none';
+  const hist = DB.historial.filter(h=>h['ID Contacto']===id);
+  const cont = document.getElementById('detHistorial');
+  cont.innerHTML = hist.length? hist.map(h=>`
+    <div class="timeline-item ${h.Canal==='Manual'?'manual':''}">
+      <div class="dot"></div>
+      <div class="txt"><b>${h.Tipo}</b> — ${quitarEtiquetaLote(h['Asunto/Resumen'])||''}<br><small>${fmtFecha(h.Fecha)} · ${h.Canal}</small></div>
+    </div>`).join('') : '<p class="meta">Sin registros todavía.</p>';
+  document.getElementById('modalDetalle').classList.add('activo');
+}
+function irACompositorConContacto(){
+  cerrarModal('modalDetalle');
+  seleccionCompositor = new Set([idContactoActivo]);
+  irScreen('compositor'); irPaso(1); renderDestinatarios();
+}
+function irACompositorConContactoWA(){
+  cerrarModal('modalDetalle');
+  seleccionCompositor = new Set([idContactoActivo]);
+  irScreen('compositor'); irPaso(1); renderDestinatarios();
+  seleccionarCanal('whatsapp');
+}
+
+// ---------- MODAL CONTACTO (nuevo) ----------
+function renderSelectsFormulario(){
+  const selE = document.getElementById('fEmpresa');
+  selE.innerHTML = '<option value="">— Seleccionar —</option>' + DB.empresas.map(e=>`<option value="${e.ID}">${e['Razon Social']}</option>`).join('');
+  actualizarPlantasForm();
+  const notaSel = document.getElementById('notaContacto');
+  notaSel.innerHTML = '<option value="">— Seleccionar —</option>' + DB.contactos.map(c=>`<option value="${c.ID}">${c.Nombre}</option>`).join('');
+}
+function actualizarPlantasForm(){
+  const idE = document.getElementById('fEmpresa').value;
+  const selP = document.getElementById('fPlanta');
+  const plantas = DB.plantas.filter(p=>!idE || p['ID Empresa']===idE);
+  selP.innerHTML = '<option value="">— Seleccionar —</option>' + plantas.map(p=>`<option value="${p.ID}">${p['Nombre Planta']}</option>`).join('');
+}
+function abrirModalContacto(){
+  ['fNombre','fCargo','fTelefono','fCorreo','fNuevaEmpresa','fNuevaCiudad','fNuevaPlanta','fRegionPlanta','fNotas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modalContacto').classList.add('activo');
+}
+async function importarDesdeTelefono(){
+  if(!('contacts' in navigator) || !('ContactsManager' in window)){
+    toast('Tu navegador no soporta importar contactos aquí. Complétalo a mano.'); return;
+  }
+  try{
+    const props = ['name','email','tel'];
+    const [c] = await navigator.contacts.select(props, {multiple:false});
+    if(c){
+      document.getElementById('fNombre').value = (c.name&&c.name[0])||'';
+      document.getElementById('fCorreo').value = (c.email&&c.email[0])||'';
+      document.getElementById('fTelefono').value = (c.tel&&c.tel[0])||'';
+      toast('Contacto importado, revisa y completa el resto.');
+    }
+  }catch(e){ toast('No se pudo importar: '+e.message); }
+}
+
+let contactosImportadosTmp = [];
+async function importarVariosDesdeTelefono(){
+  if(!('contacts' in navigator) || !('ContactsManager' in window)){
+    toast('Tu navegador no soporta esto. Importa de a uno o a mano.'); return;
+  }
+  try{
+    const seleccion = await navigator.contacts.select(['name','email','tel'], {multiple:true});
+    if(!seleccion || seleccion.length===0) return;
+    contactosImportadosTmp = seleccion.map(c=>({
+      nombre: (c.name&&c.name[0])||'(sin nombre)',
+      correo: (c.email&&c.email[0])||'',
+      telefono: (c.tel&&c.tel[0])||''
+    })).filter(c=>c.correo);
+    const sinCorreo = seleccion.length - contactosImportadosTmp.length;
+    document.getElementById('resumenImportados').textContent =
+      contactosImportadosTmp.length + ' contacto(s) con correo listos para importar' +
+      (sinCorreo ? ' (' + sinCorreo + ' se omitieron por no tener correo)' : '');
+
+    const selE = document.getElementById('impEmpresa');
+    selE.innerHTML = '<option value="">— Sin asignar —</option>' + DB.empresas.map(e=>`<option value="${e.ID}">${e['Razon Social']}</option>`).join('');
+    document.getElementById('impPlanta').innerHTML = '<option value="">— Sin sede —</option>';
+    selE.onchange = ()=>{
+      const plantas = DB.plantas.filter(p=>p['ID Empresa']===selE.value);
+      document.getElementById('impPlanta').innerHTML = '<option value="">— Sin sede —</option>' + plantas.map(p=>`<option value="${p.ID}">${p['Nombre Planta']}</option>`).join('');
+    };
+    document.getElementById('listaImportados').innerHTML = contactosImportadosTmp.map(c=>
+      `<div class="contact-pick"><span>${c.nombre}</span><span class="meta">${c.correo}</span></div>`
+    ).join('') || '<p class="meta">Ninguno de los seleccionados tenía correo.</p>';
+    document.getElementById('modalImportarVarios').classList.add('activo');
+  }catch(e){ toast('No se pudo importar: '+e.message); }
+}
+async function confirmarImportarVarios(){
+  if(contactosImportadosTmp.length===0){ cerrarModal('modalImportarVarios'); return; }
+  const idEmpresa = document.getElementById('impEmpresa').value;
+  const idPlanta = document.getElementById('impPlanta').value;
+  let creados = 0;
+  for(const c of contactosImportadosTmp){
+    const id = await llamar('crearContacto', {nombre:c.nombre, correo:c.correo, telefono:c.telefono, idEmpresa, idPlanta});
+    DB.contactos.push({ID:id, Nombre:c.nombre, Correo:c.correo, Telefono:c.telefono, 'ID Empresa':idEmpresa, 'ID Planta':idPlanta});
+    creados++;
+  }
+  contactosImportadosTmp = [];
+  cerrarModal('modalImportarVarios');
+  renderDirectorio(); renderSelectsFormulario(); renderFiltroEmpresasComp();
+  toast(creados + ' contactos importados');
+}
+// ---------- IMPORTAR DESDE CSV ----------
+function parsearCSV(texto){
+  const filas = [];
+  let fila = [], campo = '', enComillas = false;
+  for(let i=0;i<texto.length;i++){
+    const c = texto[i];
+    if(enComillas){
+      if(c === '"'){
+        if(texto[i+1] === '"'){ campo += '"'; i++; }
+        else enComillas = false;
+      } else campo += c;
+    } else {
+      if(c === '"') enComillas = true;
+      else if(c === ','){ fila.push(campo); campo=''; }
+      else if(c === '\n'){ fila.push(campo); filas.push(fila); fila=[]; campo=''; }
+      else if(c === '\r'){ /* ignorar */ }
+      else campo += c;
+    }
+  }
+  if(campo.length || fila.length){ fila.push(campo); filas.push(fila); }
+  return filas.filter(f => !(f.length===1 && f[0]===''));
+}
+
+let contactosCSVTmp = [];
+document.getElementById('archivoCSV').addEventListener('change', async (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const texto = await file.text();
+  const filas = parsearCSV(texto);
+  if(filas.length < 2){ toast('El archivo CSV está vacío'); e.target.value=''; return; }
+  const encabezado = filas[0].map(h=>h.trim());
+  const idxNombre = encabezado.indexOf('Nombre');
+  const idxTelefono = encabezado.indexOf('Teléfono');
+  const idxCorreo = encabezado.indexOf('Correo');
+  const idxPuesto = encabezado.indexOf('Puesto');
+  const idxEmpresa = encabezado.indexOf('Empresa');
+  const idxCiudad = encabezado.indexOf('Ciudad');
+  if(idxNombre<0 || idxCorreo<0){ toast('El CSV debe tener al menos columnas Nombre y Correo'); e.target.value=''; return; }
+
+  const todos = filas.slice(1).map(f=>({
+    nombre: (f[idxNombre]||'').trim(),
+    telefono: idxTelefono>=0 ? (f[idxTelefono]||'').trim() : '',
+    correo: (f[idxCorreo]||'').trim(),
+    cargo: idxPuesto>=0 ? (f[idxPuesto]||'').trim() : '',
+    empresa: idxEmpresa>=0 ? (f[idxEmpresa]||'').trim() : '',
+    ciudad: idxCiudad>=0 ? (f[idxCiudad]||'').trim() : ''
+  }));
+  // igual que la importación desde el teléfono: se requiere correo (la app es de envío de correos)
+  contactosCSVTmp = todos.filter(c=>c.nombre && c.correo);
+  const sinCorreo = todos.length - contactosCSVTmp.length;
+  document.getElementById('resumenImportadosCSV').textContent =
+    contactosCSVTmp.length + ' contacto(s) con correo listos para importar' +
+    (sinCorreo ? ' (' + sinCorreo + ' se omitieron por no tener correo)' : '');
+  document.getElementById('modalImportarCSV').classList.add('activo');
+  e.target.value = '';
+});
+
+async function confirmarImportarCSV(){
+  if(contactosCSVTmp.length===0){ cerrarModal('modalImportarCSV'); return; }
+  const btn = document.getElementById('btnConfirmarImportCSV');
+  const prog = document.getElementById('progresoImportCSV');
+  const total = contactosCSVTmp.length;
+  btn.disabled = true; prog.style.display = 'block';
+  prog.textContent = `Importando... 0/${total}`;
+  const cacheEmpresas = {};
+  DB.empresas.forEach(e=> cacheEmpresas[(e['Razon Social']||'').toLowerCase()] = e.ID);
+  let creados = 0;
+  const fallidos = [];
+  for(const c of contactosCSVTmp){
+    try{
+      let idEmpresa = '';
+      if(c.empresa){
+        const clave = c.empresa.toLowerCase();
+        if(cacheEmpresas[clave]) idEmpresa = cacheEmpresas[clave];
+        else{
+          idEmpresa = await llamar('crearEmpresa', {razonSocial:c.empresa, nicho:''});
+          cacheEmpresas[clave] = idEmpresa;
+          DB.empresas.push({ID:idEmpresa,'Razon Social':c.empresa, Nicho:''});
+        }
+      }
+      const notas = c.ciudad ? ('Ciudad: ' + c.ciudad) : '';
+      const id = await llamar('crearContacto', {nombre:c.nombre, cargo:c.cargo, correo:c.correo, telefono:c.telefono, idEmpresa, idPlanta:'', notas});
+      DB.contactos.push({ID:id, Nombre:c.nombre, Cargo:c.cargo, Correo:c.correo, Telefono:c.telefono, 'ID Empresa':idEmpresa, 'ID Planta':''});
+      creados++;
+    }catch(err){
+      console.error('Fallo al importar', c.nombre, err);
+      fallidos.push(c.nombre);
+      // si el primer intento falla por conexión, no tiene sentido seguir insistiendo 963 veces mas
+      if(creados===0 && fallidos.length>=3){
+        prog.textContent = `Se detuvo. Error real: ${err.message || err}`;
+        btn.disabled = false;
+        return;
+      }
+    }
+    prog.textContent = `Importando... ${creados+fallidos.length}/${total}` + (fallidos.length ? ` (${fallidos.length} con error)` : '');
+  }
+  contactosCSVTmp = [];
+  btn.disabled = false; prog.style.display = 'none';
+  cerrarModal('modalImportarCSV');
+  renderDirectorio(); renderSelectsFormulario(); renderFiltroEmpresasComp();
+  if(fallidos.length){
+    console.warn('Contactos que fallaron:', fallidos);
+    toast(creados + ' importados, ' + fallidos.length + ' con error (ver consola)');
+  } else {
+    toast(creados + ' contactos importados desde CSV');
+  }
+}
+
+async function guardarContacto(){
+  let idEmpresa = document.getElementById('fEmpresa').value;
+  const nuevaEmpresa = document.getElementById('fNuevaEmpresa').value.trim();
+  if(!idEmpresa && nuevaEmpresa){
+    idEmpresa = await llamar('crearEmpresa', {razonSocial:nuevaEmpresa, nicho:document.getElementById('fNuevoNicho').value});
+    DB.empresas.push({ID:idEmpresa,'Razon Social':nuevaEmpresa, Nicho:document.getElementById('fNuevoNicho').value});
+    guardarCiudadLocal(idEmpresa, document.getElementById('fNuevaCiudad').value);
+  }
+  let idPlanta = document.getElementById('fPlanta').value;
+  const nuevaPlanta = document.getElementById('fNuevaPlanta').value.trim();
+  if(!idPlanta && nuevaPlanta){
+    idPlanta = await llamar('crearPlanta', {nombrePlanta:nuevaPlanta, idEmpresa, region:document.getElementById('fRegionPlanta').value});
+    DB.plantas.push({ID:idPlanta,'Nombre Planta':nuevaPlanta,'ID Empresa':idEmpresa});
+  }
+  const correo = document.getElementById('fCorreo').value.trim();
+  const nombre = document.getElementById('fNombre').value.trim();
+  if(!nombre || !correo){ toast('Falta nombre o correo'); return; }
+  const id = await llamar('crearContacto', {
+    nombre, cargo:document.getElementById('fCargo').value, correo,
+    telefono:document.getElementById('fTelefono').value, idPlanta, idEmpresa,
+    notas:document.getElementById('fNotas').value
+  });
+  DB.contactos.push({ID:id, Nombre:nombre, Cargo:document.getElementById('fCargo').value, Correo:correo, Telefono:document.getElementById('fTelefono').value, 'ID Planta':idPlanta, 'ID Empresa':idEmpresa});
+  cerrarModal('modalContacto');
+  renderDirectorio(); renderSelectsFormulario(); renderFiltroEmpresasComp();
+  toast('Contacto guardado');
+}
+
+// ---------- NOTA MANUAL ----------
+function abrirModalNota(idPre){
+  renderSelectsFormulario();
+  if(idPre) document.getElementById('notaContacto').value = idPre;
+  document.getElementById('modalNota').classList.add('activo');
+}
+async function guardarNota(){
+  const idContacto = document.getElementById('notaContacto').value;
+  if(!idContacto){ toast('Elige un contacto'); return; }
+  const datos = {
+    idContacto, tipo: document.getElementById('notaTipo').value,
+    asunto: document.getElementById('notaAsunto').value,
+    detalle: document.getElementById('notaDetalle').value
+  };
+  await llamar('crearNotaManual', datos);
+  DB.historial.unshift({'ID Contacto':idContacto, Fecha:new Date(), Canal:'Manual', Tipo:datos.tipo, 'Asunto/Resumen':datos.asunto, Detalle:datos.detalle});
+  cerrarModal('modalNota'); renderHistorial();
+  toast('Registrado en el historial');
+}
+
+// ---------- HISTORIAL ----------
+function cambiarVistaHistorial(v){
+  vistaHistorial = v;
+  document.getElementById('chipHistIndividual').classList.toggle('on', v==='individual');
+  document.getElementById('chipHistCampana').classList.toggle('on', v==='campana');
+  renderHistorial();
+}
+function renderHistorial(){
+  const filtro = (document.getElementById('buscarHistorial').value||'').toLowerCase();
+  const cont = document.getElementById('listaHistorial');
+  const lista = DB.historial.filter(h=>{
+    const c = DB.contactos.find(x=>x.ID===h['ID Contacto']);
+    const txt = ((c?c.Nombre:'')+' '+(c?nombreEmpresa(c['ID Empresa']):'')).toLowerCase();
+    return txt.includes(filtro);
+  });
+  if(lista.length===0){ cont.innerHTML = '<div class="empty"><div class="display">Sin actividad todavía</div>Los correos que envíes y las notas que agregues van a aparecer aquí.</div>'; return; }
+
+  if(vistaHistorial==='campana'){
+    const grupos = {};
+    lista.forEach(h=>{
+      const tag = leerEtiquetaLote(h['Asunto/Resumen']);
+      if(tag){
+        if(!grupos[tag.id]) grupos[tag.id] = {nombre:tag.nombre, canal:h.Canal, fecha:h.Fecha, items:[]};
+        grupos[tag.id].items.push(h);
+      }
+    });
+    const gruposArr = Object.values(grupos).sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
+    if(gruposArr.length===0){ cont.innerHTML = '<div class="empty"><div class="display">Sin campañas todavía</div>Las campañas aparecen acá cuando mandas un envío a más de un contacto a la vez.</div>'; return; }
+    cont.innerHTML = gruposArr.map(g=>`
+      <div class="card">
+        <div class="meta">${fmtFecha(g.fecha)} · ${g.canal==='WhatsApp'?'<span class="badge badge-whatsapp">WhatsApp</span>':g.canal}</div>
+        <h3 style="font-size:15px;">${g.nombre}</h3>
+        <div class="meta">${g.items.length} contacto(s) en esta campaña</div>
+      </div>`).join('');
+    return;
+  }
+
+  cont.innerHTML = lista.map(h=>{
+    const c = DB.contactos.find(x=>x.ID===h['ID Contacto']);
+    return `<div class="card">
+      <div class="meta">${fmtFecha(h.Fecha)} · ${h.Canal==='Manual'?'<span class="badge badge-manual">Manual</span>':(h.Canal==='WhatsApp'?'<span class="badge badge-whatsapp">WhatsApp</span>':h.Canal)}</div>
+      <h3 style="font-size:15px;">${c?c.Nombre:'(contacto eliminado)'} — ${h.Tipo}</h3>
+      <div class="meta">${quitarEtiquetaLote(h['Asunto/Resumen'])||''}</div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('buscarHistorial').addEventListener('input', renderHistorial);
+
+// ---------- COMPOSITOR ----------
+function nichoEmpresa(id){ const e=DB.empresas.find(x=>x.ID===id); return e? e.Nicho:''; }
+function listaNichosUnicos(){ return [...new Set(DB.empresas.map(e=>e.Nicho).filter(Boolean))]; }
+function renderFiltroNichosComp(){
+  const cont = document.getElementById('filtroNichosComp');
+  cont.innerHTML = '<div class="chip on" onclick="filtrarNichoComp(null,this)">Todos</div>' +
+    listaNichosUnicos().map(n=>`<div class="chip" onclick="filtrarNichoComp('${n}',this)">${n}</div>`).join('');
+}
+function filtrarNichoComp(nicho, el){
+  document.querySelectorAll('#filtroNichosComp .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroNichoComp = nicho; renderDestinatarios();
+}
+function renderFiltroEmpresasComp(){
+  const cont = document.getElementById('filtroEmpresasComp');
+  cont.innerHTML = '<div class="chip on" onclick="filtrarEmpresaComp(null,this)">Todas</div>' +
+    DB.empresas.map(e=>`<div class="chip" onclick="filtrarEmpresaComp('${e.ID}',this)">${e['Razon Social']}</div>`).join('');
+  renderFiltroNichosComp();
+  renderFiltroCiudadesComp();
+  renderDestinatarios();
+  renderFiltrosDirectorio();
+}
+function renderFiltrosDirectorio(){
+  const contN = document.getElementById('filtroNichosDir');
+  contN.innerHTML = '<div class="chip on" onclick="filtrarNichoDir(null,this)">Todos los rubros</div>' +
+    listaNichosUnicos().map(n=>`<div class="chip" onclick="filtrarNichoDir('${n}',this)">${n}</div>`).join('');
+  const contE = document.getElementById('filtroEmpresasDir');
+  contE.innerHTML = '<div class="chip on" onclick="filtrarEmpresaDir(null,this)">Todas las empresas</div>' +
+    DB.empresas.map(e=>`<div class="chip" onclick="filtrarEmpresaDir('${e.ID}',this)">${e['Razon Social']}</div>`).join('');
+  const contC = document.getElementById('filtroCiudadesDir');
+  const ciudades = [...new Set(Object.values(ciudadesLocal).filter(Boolean))].sort();
+  contC.innerHTML = '<div class="chip on" onclick="filtrarCiudadDir(null,this)">Todas las ciudades</div>' +
+    ciudades.map(c=>`<div class="chip" onclick="filtrarCiudadDir('${c}',this)">${c}</div>`).join('');
+}
+function filtrarNichoDir(v, el){
+  document.querySelectorAll('#filtroNichosDir .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroNichoDir = v; renderDirectorio();
+}
+function filtrarEmpresaDir(v, el){
+  document.querySelectorAll('#filtroEmpresasDir .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroEmpresaDir = v; renderDirectorio();
+}
+function filtrarCiudadDir(v, el){
+  document.querySelectorAll('#filtroCiudadesDir .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroCiudadDir = v; renderDirectorio();
+}
+function filtrarEmpresaComp(id, el){
+  document.querySelectorAll('#filtroEmpresasComp .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroEmpresaComp = id; renderDestinatarios();
+}
+function renderFiltroCiudadesComp(){
+  const cont = document.getElementById('filtroCiudadesComp');
+  const ciudades = [...new Set(Object.values(ciudadesLocal).filter(Boolean))].sort();
+  cont.innerHTML = '<div class="chip on" onclick="filtrarCiudadComp(null,this)">Todas</div>' +
+    ciudades.map(c=>`<div class="chip" onclick="filtrarCiudadComp('${c}',this)">${c}</div>`).join('');
+}
+function filtrarCiudadComp(ciudad, el){
+  document.querySelectorAll('#filtroCiudadesComp .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroCiudadComp = ciudad; renderDestinatarios();
+}
+function renderDestinatarios(){
+  const cont = document.getElementById('listaDestinatarios');
+  const lista = DB.contactos.filter(c=>
+    (!filtroEmpresaComp || c['ID Empresa']===filtroEmpresaComp) &&
+    (!filtroNichoComp || nichoEmpresa(c['ID Empresa'])===filtroNichoComp) &&
+    (!filtroCiudadComp || ciudadEmpresa(c['ID Empresa'])===filtroCiudadComp)
+  );
+  cont.innerHTML = lista.map(c=>`
+    <div class="contact-pick">
+      <label><input type="checkbox" ${seleccionCompositor.has(c.ID)?'checked':''} onchange="toggleSeleccion('${c.ID}')"> ${c.Nombre}</label>
+      <span class="meta">${nombreEmpresa(c['ID Empresa'])}${nichoEmpresa(c['ID Empresa'])? ' · '+nichoEmpresa(c['ID Empresa']):''}</span>
+    </div>`).join('') || '<p class="meta">No hay contactos en este filtro.</p>';
+  document.getElementById('contadorSeleccion').textContent = seleccionCompositor.size + ' seleccionados';
+}
+function toggleSeleccion(id){
+  seleccionCompositor.has(id) ? seleccionCompositor.delete(id) : seleccionCompositor.add(id);
+  document.getElementById('contadorSeleccion').textContent = seleccionCompositor.size + ' seleccionados';
+}
+function renderPlantillasSelect(){
+  const sel = document.getElementById('selectPlantilla');
+  sel.innerHTML = '<option value="">Escribir desde cero</option>' + DB.plantillas.map(p=>`<option value="${p.ID}">${p['Nombre Plantilla']}</option>`).join('');
+}
+function cargarPlantilla(){
+  const id = document.getElementById('selectPlantilla').value;
+  const t = DB.plantillas.find(p=>p.ID===id);
+  if(t){ document.getElementById('asuntoMsg').value = t.Asunto; document.getElementById('cuerpoMsg').value = t.Cuerpo; }
+}
+document.getElementById('archivoAdjunto').addEventListener('change', async (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  toast('Subiendo archivo...');
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    const base64 = reader.result.split(',')[1];
+    const link = await llamar('subirArchivoYObtenerLink', base64, file.name, file.type||'application/octet-stream');
+    adjuntoLink = link;
+    document.getElementById('adjuntoPreview').innerHTML = `<span class="link-chip">📎 ${file.name}</span>`;
+    toast('Archivo listo');
+  };
+  reader.readAsDataURL(file);
+});
+function irPaso(n){
+  document.getElementById('pasoDestinatarios').style.display = n===1?'block':'none';
+  document.getElementById('pasoMensaje').style.display = n===2?'block':'none';
+  document.getElementById('pasoEnvio').style.display = n===3?'block':'none';
+  ['st1','st2','st3'].forEach((id,i)=>document.getElementById(id).classList.toggle('on', i < n));
+  if(n===1) renderDestinatarios();
+  if(n===3) actualizarResumenEnvio();
+}
+function elegirModoEnvio(modo){
+  modoEnvio = modo;
+  document.getElementById('chipAhora').classList.toggle('on', modo==='ahora');
+  document.getElementById('chipProgramado').classList.toggle('on', modo==='programado');
+  document.getElementById('camposProgramado').style.display = modo==='programado'?'block':'none';
+  actualizarResumenEnvio();
+}
+function actualizarResumenEnvio(){
+  const canalTxt = canalCompositor==='whatsapp' ? 'WhatsApp' : 'correo';
+  document.getElementById('resumenEnvio').textContent = `${seleccionCompositor.size} destinatario(s) por ${canalTxt} · ${modoEnvio==='ahora'?'se abrirán para enviar ahora':'quedan programados en la Cola'}`;
+}
+function renderVariables(texto, c){
+  return (texto||'')
+    .replaceAll('{{nombre}}', c.Nombre||'')
+    .replaceAll('{{cargo}}', c.Cargo||'')
+    .replaceAll('{{empresa}}', nombreEmpresa(c['ID Empresa'])||'')
+    .replaceAll('{{planta}}', nombrePlanta(c['ID Planta'])||'');
+}
+async function confirmarEnvio(){
+  if(seleccionCompositor.size===0){ toast('Elige al menos un destinatario'); return; }
+  const asuntoBase = document.getElementById('asuntoMsg').value;
+  const cuerpoBase = document.getElementById('cuerpoMsg').value;
+  const fecha = modoEnvio==='programado' ? document.getElementById('fechaProg').value : new Date().toISOString().slice(0,10);
+  const hora = modoEnvio==='programado' ? document.getElementById('horaProg').value : new Date().toTimeString().slice(0,5);
+  const esCampana = seleccionCompositor.size > 1;
+  const loteId = esCampana ? generarLoteId() : '';
+  const nombreCampana = esCampana ? (document.getElementById('nombreCampana').value.trim() || ('Campana ' + fecha)) : '';
+
+  for(const idC of seleccionCompositor){
+    const c = DB.contactos.find(x=>x.ID===idC);
+    if(!c) continue;
+    let asunto = renderVariables(asuntoBase, c);
+    let cuerpo = renderVariables(cuerpoBase, c);
+    if(adjuntoLink) cuerpo += `\n\nAdjunto: ${adjuntoLink}`;
+    let asuntoGuardado = esCampana ? etiquetarLote(asunto, loteId, nombreCampana) : asunto;
+    const idEnv = await llamar('programarEnvio', {idContacto:idC, idPlantilla:document.getElementById('selectPlantilla').value, asunto:asuntoGuardado, cuerpo, fechaProgramada:fecha, horaProgramada:hora, adjuntos:adjuntoLink});
+    DB.cola.unshift({ID:idEnv,'ID Contacto':idC,Asunto:asuntoGuardado,Cuerpo:cuerpo,'Fecha Programada':fecha,'Hora Programada':hora,Estado:'Pendiente'});
+    if(modoEnvio==='ahora') window.open(construirLinkOutlook(c.Correo, asunto, cuerpo), '_blank');
+  }
+  toast(modoEnvio==='ahora' ? 'Correos abiertos en Outlook Web' : 'Envíos programados en la Cola');
+  seleccionCompositor = new Set(); adjuntoLink=''; document.getElementById('adjuntoPreview').innerHTML='';
+  document.getElementById('asuntoMsg').value=''; document.getElementById('cuerpoMsg').value='';
+  document.getElementById('nombreCampana').value='';
+  irPaso(1); renderCola(); irScreen('cola');
+}
+function construirLinkOutlook(correo, asunto, cuerpo){
+  asunto = quitarEtiquetaLote(asunto);
+  return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(correo)}&subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+}
+
+// ---------- COLA ----------
+function filtrarCola(estado, el){
+  document.querySelectorAll('#screen-cola .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filtroColaActual = estado; renderCola();
+}
+function renderCola(){
+  const cont = document.getElementById('listaCola');
+  const lista = DB.cola.filter(e=> (e.Estado||'Pendiente')===filtroColaActual)
+    .sort((a,b)=> new Date(a['Fecha Programada']+' '+a['Hora Programada']) - new Date(b['Fecha Programada']+' '+b['Hora Programada']));
+  if(lista.length===0){ cont.innerHTML = '<div class="empty"><div class="display">Nada por aquí</div>No hay envíos en este estado.</div>'; return; }
+  cont.innerHTML = lista.map(e=>{
+    const c = DB.contactos.find(x=>x.ID===e['ID Contacto']);
+    const badge = e.Estado==='Enviado'?'badge-enviado':(e.Estado==='Cancelado'?'badge-cancel':'badge-pend');
+    return `<div class="card">
+      <div class="meta"><span class="badge ${badge}">${e.Estado||'Pendiente'}</span> · ${e['Fecha Programada']} ${e['Hora Programada']||''}</div>
+      <h3 style="font-size:15px;">${c?c.Nombre:'—'}</h3>
+      <div class="meta">${quitarEtiquetaLote(e.Asunto)||''}</div>
+      ${e.Estado!=='Enviado' && e.Estado!=='Cancelado' ? `
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-accent btn-sm" onclick="abrirEnOutlook('${e.ID}')">Abrir en Outlook</button>
+        <button class="btn btn-ghost btn-sm" onclick="marcarEnviado('${e.ID}')">Marcar enviado</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelarEnvio('${e.ID}')">Cancelar</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+function abrirEnOutlook(id){
+  const e = DB.cola.find(x=>x.ID===id); const c = DB.contactos.find(x=>x.ID===e['ID Contacto']);
+  window.open(construirLinkOutlook(c.Correo, e.Asunto, e.Cuerpo), '_blank');
+}
+async function marcarEnviado(id){
+  const e = DB.cola.find(x=>x.ID===id);
+  await llamar('actualizarEstadoEnvio', id, 'Enviado');
+  await llamar('registrarHistorial', {idContacto:e['ID Contacto'], canal:'App', tipo:'Correo enviado', asunto:e.Asunto, detalle:e.Cuerpo, origen:'Cola Salmones', estado:'Enviado'});
+  e.Estado='Enviado';
+  DB.historial.unshift({'ID Contacto':e['ID Contacto'], Fecha:new Date(), Canal:'App', Tipo:'Correo enviado', 'Asunto/Resumen':e.Asunto});
+  renderCola(); toast('Marcado como enviado y registrado en el historial');
+}
+async function cancelarEnvio(id){
+  await llamar('actualizarEstadoEnvio', id, 'Cancelado');
+  const e = DB.cola.find(x=>x.ID===id); e.Estado='Cancelado';
+  renderCola();
+}
+
+// ---------- CANAL (Correo / WhatsApp) ----------
+function seleccionarCanal(canal){
+  canalCompositor = canal;
+  document.getElementById('chipCanalCorreo').classList.toggle('on', canal==='correo');
+  document.getElementById('chipCanalWA').classList.toggle('on', canal==='whatsapp');
+  document.getElementById('campoAsunto').style.display = canal==='whatsapp' ? 'none' : 'block';
+  document.getElementById('labelCuerpo').textContent = canal==='whatsapp'
+    ? 'Mensaje de WhatsApp — variables: {{nombre}} {{cargo}} {{empresa}} {{planta}}'
+    : 'Cuerpo — variables: {{nombre}} {{cargo}} {{empresa}} {{planta}}';
+  document.getElementById('chipProgramado').style.display = canal==='whatsapp' ? 'none' : 'block';
+  document.getElementById('notaCanalWA').style.display = canal==='whatsapp' ? 'block' : 'none';
+  if(canal==='whatsapp' && modoEnvio==='programado') elegirModoEnvio('ahora');
+  actualizarResumenEnvio();
+}
+function confirmarEnvioSegunCanal(){
+  if(canalCompositor==='whatsapp') iniciarColaWhatsApp();
+  else confirmarEnvio();
+}
+
+// ---------- ENVÍO POR WHATSAPP (cola uno por uno) ----------
+function buildWaLink(telefono, texto){
+  const digitos = (telefono||'').replace(/[^0-9]/g,'');
+  return 'https://wa.me/' + digitos + '?text=' + encodeURIComponent(texto);
+}
+function iniciarColaWhatsApp(){
+  if(seleccionCompositor.size===0){ toast('Elige al menos un destinatario'); return; }
+  const cuerpoBase = document.getElementById('cuerpoMsg').value;
+  if(!cuerpoBase.trim()){ toast('Escribe un mensaje primero'); return; }
+  const ids = [...seleccionCompositor].filter(id=>{
+    const c = DB.contactos.find(x=>x.ID===id);
+    return c && c.Telefono;
+  });
+  const sinTelefono = seleccionCompositor.size - ids.length;
+  if(ids.length===0){ toast('Ninguno de los seleccionados tiene teléfono cargado'); return; }
+  colaWA = ids;
+  colaWAIndex = 0;
+  colaWAEnviados = 0;
+  colaWASaltados = 0;
+  const esCampana = ids.length > 1;
+  colaWALoteId = esCampana ? generarLoteId() : '';
+  colaWANombreCampana = esCampana ? (document.getElementById('nombreCampana').value.trim() || ('Campana ' + new Date().toISOString().slice(0,10))) : '';
+  window._colaWACuerpoBase = cuerpoBase;
+  window._colaWAAdjunto = adjuntoLink;
+  if(sinTelefono) toast(sinTelefono + ' se omiten por no tener teléfono cargado');
+  document.getElementById('colaWADone').style.display = 'none';
+  document.getElementById('colaWAAcciones').style.display = 'flex';
+  document.getElementById('modalColaWA').classList.add('activo');
+  renderColaWAStep();
+}
+function renderColaWAStep(){
+  if(colaWAIndex >= colaWA.length){ finalizarColaWA(); return; }
+  const c = DB.contactos.find(x=>x.ID===colaWA[colaWAIndex]);
+  document.getElementById('colaWAProgreso').textContent = 'Contacto ' + (colaWAIndex+1) + ' de ' + colaWA.length;
+  document.getElementById('colaWANombre').textContent = c.Nombre;
+  document.getElementById('colaWATelefono').textContent = c.Telefono;
+  let texto = renderVariables(window._colaWACuerpoBase, c);
+  if(window._colaWAAdjunto) texto += '\n\nAdjunto: ' + window._colaWAAdjunto;
+  document.getElementById('colaWAPreview').textContent = texto;
+}
+async function enviarColaWAActual(){
+  const c = DB.contactos.find(x=>x.ID===colaWA[colaWAIndex]);
+  if(!c){ colaWAIndex++; renderColaWAStep(); return; }
+  let texto = renderVariables(window._colaWACuerpoBase, c);
+  if(window._colaWAAdjunto) texto += '\n\nAdjunto: ' + window._colaWAAdjunto;
+  window.open(buildWaLink(c.Telefono, texto), '_blank');
+  let resumen = colaWALoteId ? etiquetarLote(texto.slice(0,120), colaWALoteId, colaWANombreCampana) : texto.slice(0,120);
+  try{
+    await llamar('registrarHistorial', {idContacto:c.ID, canal:'WhatsApp', tipo:'WhatsApp enviado', asunto:resumen, detalle:texto, origen:'App', estado:'Enviado'});
+    DB.historial.unshift({'ID Contacto':c.ID, Fecha:new Date(), Canal:'WhatsApp', Tipo:'WhatsApp enviado', 'Asunto/Resumen':resumen});
+  }catch(e){ console.error('No se pudo registrar en el historial', e); }
+  colaWAEnviados++;
+  colaWAIndex++;
+  renderColaWAStep();
+}
+function saltarColaWAActual(){
+  colaWASaltados++;
+  colaWAIndex++;
+  renderColaWAStep();
+}
+function finalizarColaWA(){
+  document.getElementById('colaWAProgreso').textContent = 'Campaña finalizada';
+  document.getElementById('colaWANombre').textContent = '';
+  document.getElementById('colaWATelefono').textContent = '';
+  document.getElementById('colaWAPreview').textContent = '';
+  document.getElementById('colaWAAcciones').style.display = 'none';
+  document.getElementById('colaWAResumen').textContent =
+    colaWAEnviados + ' enviados, ' + colaWASaltados + ' saltados, de ' + colaWA.length + ' contactos.';
+  document.getElementById('colaWADone').style.display = 'block';
+  renderHistorial(); renderDirectorio();
+  seleccionCompositor = new Set(); adjuntoLink=''; document.getElementById('adjuntoPreview').innerHTML='';
+  document.getElementById('asuntoMsg').value=''; document.getElementById('cuerpoMsg').value='';
+  document.getElementById('nombreCampana').value='';
+  irPaso(1);
+}
+function cerrarColaWA(){
+  if(colaWAIndex < colaWA.length){
+    if(!confirm('La campaña no terminó (' + (colaWA.length-colaWAIndex) + ' contactos restantes). ¿Salir igual?')) return;
+  }
+  document.getElementById('modalColaWA').classList.remove('activo');
+  irScreen('directorio');
+}
+
+// ---------- EMPRESAS Y CIUDADES ----------
+function abrirModalEmpresas(){
+  renderListaEmpresasCiudad();
+  document.getElementById('modalEmpresas').classList.add('activo');
+}
+function renderListaEmpresasCiudad(){
+  const cont = document.getElementById('listaEmpresasCiudad');
+  if(DB.empresas.length===0){ cont.innerHTML = '<p class="meta">Aún no hay empresas cargadas.</p>'; return; }
+  cont.innerHTML = DB.empresas.map(e=>`
+    <div class="city-row">
+      <span style="flex:1.3;">${e['Razon Social']}${e.Nicho? ' <span class="badge badge-manual">'+e.Nicho+'</span>':''}</span>
+      <input type="text" placeholder="Ciudad" value="${ciudadEmpresa(e.ID)}" onchange="guardarCiudadLocal('${e.ID}', this.value); renderFiltroCiudadesComp(); renderDirectorio();">
+    </div>`).join('');
+}
+
+// ---------- IMPORTAR TELEVENTAS / REDES SOCIALES (una sola vez) ----------
+async function importarTeleventas(){
+  const yaExiste = DB.empresas.find(e => e['Razon Social'] === 'Televentas / Redes Sociales (leads)');
+  if(yaExiste){ toast('Ya estaba importado.'); return; }
+  const contactos = [
+    ['Julio Cesar Gonzalez Morales','julioroke1984@gmail.com','56956069972',''],
+    ['Carlos Troncoso','troncoso.carlos@gmail.com','56974471833',''],
+    ['Fernando Zapata Guzman','fdozapata@hotmail.com','','Teléfono inválido en la planilla original ("Castro") - verificar con el cliente.'],
+    ['Pedro Flores Gutierrez','peterrbb@gmail.com','56969081529',''],
+    ['Rodrigo Sebastian','rodrigo.pinto86@hotmail.com','56999057217',''],
+    ['Nama Construcciones Montaje','namaconstrucciones@gmail.com','56986704850',''],
+    ['Acero Inoxidable Gomez Hormazabal','ggaceroinox@gmail.com','56982831695',''],
+    ['Pato Gonzalez','patogonzalezc@hotmail.com','56957362384',''],
+    ['Erwin Veliz','erwinveliz04@gmail.com','56952059812',''],
+    ['Juan Manuel Nuñez','Afondopro@hotmail.com','56981565486','YA_CORREO'],
+    ['Miguel Aburto','ma.aburto.m@gmail.com','56979654173','YA_CORREO'],
+    ['Fernando Moll','carloshache1453@gmail.com','56990207072','YA_CORREO'],
+    ['Juanjo Jose Pizarr','jgcp62@gmail.com','56968323759','YA_CORREO'],
+    ['Jorge Fuentes','jorgefuentes964@gmail.com','56946784989',''],
+    ['Juan Concha Maldonado','jconcha23@hotmail.com','56957807445',''],
+    ['Juan Sotomayor','negocio.maipu803@gmail.com','56996388255',''],
+    ['Rodolfo Magno Diaz Aliaga','magnorodolfo54@gmail.com','56998733713',''],
+    ['Jaime Venegas Varalla','jaimevenegasvaralla@gmail.com','56986462420',''],
+    ['Marcos Edmundo Mollo Oyanadel','edmundoelchino@gmail.com','56968379757',''],
+    ['Gerardo Hermosilla','gerardoomarhermosilla@gmail.com','56986339690',''],
+    ['Cristopher Landivar','dark.cl32@gmail.com','56961706671',''],
+    ['Raul Nelson Morales Orellana','raultornero.1959@gmail.com','56977761287','']
+  ];
+  toast('Importando 22 contactos...');
+  const idEmpresa = await llamar('crearEmpresa', {razonSocial:'Televentas / Redes Sociales (leads)', nicho:'Televentas/Redes Sociales'});
+  DB.empresas.push({ID:idEmpresa, 'Razon Social':'Televentas / Redes Sociales (leads)', Nicho:'Televentas/Redes Sociales'});
+  let creados = 0;
+  for(const [nombre, correo, telefono, marca] of contactos){
+    const notas = marca==='YA_CORREO' ? '' : marca;
+    const id = await llamar('crearContacto', {nombre, cargo:'', correo, telefono, idEmpresa, idPlanta:'', notas});
+    DB.contactos.push({ID:id, Nombre:nombre, Correo:correo, Telefono:telefono, 'ID Empresa':idEmpresa, 'ID Planta':''});
+    if(marca==='YA_CORREO'){
+      await llamar('crearNotaManual', {idContacto:id, tipo:'Estado: Contactado', asunto:'', detalle:'Ya se le había enviado correo según la planilla original de televentas (sin fecha registrada).'});
+      DB.historial.unshift({'ID Contacto':id, Fecha:new Date(), Canal:'Manual', Tipo:'Estado: Contactado', 'Asunto/Resumen':''});
+    }
+    creados++;
+  }
+  cerrarModal('modalEmpresas');
+  renderDirectorio(); renderSelectsFormulario(); renderFiltroEmpresasComp();
+  toast(creados + ' contactos de Televentas importados');
+}
+</script>
+</body>
+</html>
